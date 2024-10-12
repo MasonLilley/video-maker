@@ -23,7 +23,7 @@ def getPost():
     global textTitle
     global subreddit
     global username
-    with open("resources/postText.txt") as textFile:
+    with open("resources/AITAPostText.txt") as textFile:
         textTitle = textFile.readline().strip()
         textBody = textFile.read().replace("\n", " ").replace("\r", " ").strip()
 

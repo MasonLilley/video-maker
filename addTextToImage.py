@@ -9,24 +9,33 @@ def addTextToTemplate(userString, titleString, outputPath="introImage.png",templ
 
     # Title Text #
     text = titleString
-    fontSize = 40
+    fontSize = 35
     fontPath = "resources/roboto.ttf"
     font = ImageFont.truetype(fontPath, fontSize)
-    text_x = 125
-    text_y = 930
+    text_x = 120
+    text_y = 920
 
     # Top User Text #
-    short_text = userString
+    short_text = "TheRedditNarrator"
     short_font_size = 30
     short_font = ImageFont.truetype(fontPath, short_font_size)
-    short_text_x = 205
-    short_text_y = 820
+    short_text_x = 230
+    short_text_y = 825
+
+    # Verified Favicon #
+    verifiedImage = Image.open("resources/verified.png")
+    verifiedImage = verifiedImage.resize((30,30))
+    print(verifiedImage)
+    verified_x = 195
+    verified_y = 828
+    image.paste(verifiedImage, (verified_x, verified_y), verifiedImage)
 
     wrapped_text = textwrap.fill(text, width=50)
     draw.text((text_x, text_y), wrapped_text, fill='black', font=font)
     draw.text((short_text_x, short_text_y), short_text, fill='black', font=short_font)
 
-    output_path = "introImage.png"
-    image.save(output_path)
+    image.save(outputPath)
 
     image.show()
+
+# addTextToTemplate("u/Puzzleheaded_Hour966", "Am I in the wrong for kicking my brother and his new wife out of my house after they tried to “redecorate” my dead daughter’s room while I was at work?")
