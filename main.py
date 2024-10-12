@@ -4,11 +4,14 @@ from moviepy.editor import *
 import boto3
 from my_secrets.AWScreds import aws_access_key, aws_secret_access_key
 import re
+import addTextToImage as imager
 
 narrationGender = "male"
 AWSLimit = 3000
 textArray = []
 textTitle = ""
+subreddit = ""
+username = ""
 counter = 1
 
 os.system('clear')
@@ -18,6 +21,8 @@ os.environ['AWS_DEFAULT_REGION'] = 'us-east-1'
 
 def getPost():
     global textTitle
+    global subreddit
+    global username
     with open("resources/postText.txt") as textFile:
         textTitle = textFile.readline().strip()
         textBody = textFile.read().replace("\n", " ").replace("\r", " ").strip()
@@ -34,7 +39,6 @@ def getPost():
         textArray.append(textBeforeFullstop)
         textBody = textBody[nearestSpace+2:]
     textArray.append(textBody.strip())
-
 
     betweenBracketsPattern = r"\{([^}]+)\}"
     textInBrackets = re.search(betweenBracketsPattern, textTitle).group(1)
@@ -92,23 +96,29 @@ def getTTS():
 
 
 def composeVideo():
+    global counter
     finalAudioArray = []
     finalAudioArray.append(AudioFileClip("tts/titleTTS.mp3"))
     finalAudioArray.append(AudioFileClip("resources/silence.mp3"))
 
-    for x in range(counter):
-        audioBodytextClip = AudioFileClip(f"tts/bodytextTTS{x}.mp3")
+    for x in range(counter-1):
+        audioBodytextClip = AudioFileClip(f"tts/bodytextTTS{x+1}.mp3")
         finalAudioArray.append(audioBodytextClip)
     print(finalAudioArray)
     finalAudio = concatenate_audioclips(finalAudioArray)
-    #TODO: compose all separate audio into one  using "counter"
+
+    # Make the intro image #
+    imager.addTextToTemplate(username, textTitle)
+    imagePath = "introImage.png"
+    image = ImageClip(imagePath)
+    image = image.set_duration(AudioFileClip("tts/titleTTS.mp3").duration+1).set_position("center")
 
     fullVideo = VideoFileClip("resources/MCParkour1.mp4")
-    randomStartpoint = random.randint(0,int(fullVideo.duration)-int(finalAudio.duration))
+    randomStartpoint = random.randint(0,int(fullVideo.duration)-int(finalAudio.duration)+10)
     clip = fullVideo.subclip(randomStartpoint, randomStartpoint+finalAudio.duration)
-    resizedClip = clip.resize(newsize=(1080, 1920))
 
-    finalVideo = clip.set_audio(finalAudio)
+    videoWithAudio = clip.set_audio(finalAudio)
+    finalVideo = CompositeVideoClip([videoWithAudio, image])
     finalVideo.write_videofile("finalVideo.mp4")
 
 
