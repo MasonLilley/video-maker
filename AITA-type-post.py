@@ -128,11 +128,11 @@ def composeVideo():
     #fast render:
     # clip = fullVideo.subclip(randomStartpoint, randomStartpoint+10)
 
-    videoWithAudio = clip.set_audio(finalAudio)
-    finalVideo = CompositeVideoClip([videoWithAudio, image])
+    finalAudioClip = AudioFileClip("tts/FinalTTS.mp3")
+    finalVideo = CompositeVideoClip([clip, image])
 
 
-    finalVideo.write_videofile("finalVideo.mp4")
+    finalVideo.write_videofile("finalVideo.mp4", audio="tts/FinalTTS.mp3")
 
 
 
