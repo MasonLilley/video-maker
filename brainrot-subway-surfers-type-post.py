@@ -1,6 +1,7 @@
 import os
 import random
 from moviepy.editor import *
+from moviepy.audio.fx.all import *
 import boto3
 from my_secrets.AWScreds import aws_access_key, aws_secret_access_key
 import re
@@ -32,8 +33,6 @@ def getPost():
         textTitle = textTitle[:textTitle.rfind('{')].strip()
         content = textFile.read()
     comments = [entry.strip() for entry in content.split('---') if entry.strip()]
-
-
 
 
 def getTTS():
@@ -85,25 +84,31 @@ def getTTS():
 
 
 def composeVideo():
+    speedUpFactor = 1.1
+
     global counter
     finalAudioArray = []
+    silenceClip = AudioFileClip("resources/silence.mp3")
     wooshSound = AudioFileClip("resources/sounds/woosh.mp3")
     dingSound = AudioFileClip("resources/sounds/ding.mp3").set_start(0.2)
-    titleTTS = AudioFileClip("tts/brainrotTitleTTS.mp3")
-    originalImage = ImageClip("introImage.png").set_duration(AudioFileClip("tts/brainrotTitleTTS.mp3").duration).set_position("center")
+    backgroundMusic = AudioFileClip("resources/sounds/sneakySnitch.mp3").fx(volumex, 0.1)
+    # .fx(loop, n=none, duration=)
+    titleTTS = AudioFileClip("tts/brainrotTitleTTS.mp3") #TO SPEED UP
+
+    imager.addTextToTemplate(username, textTitle)
+    originalImage = ImageClip("introImage.png").set_duration(titleTTS.duration).set_position("center")
     bgVideo = VideoFileClip("resources/SubwaySurfers1.mp4")
 
     introAudio = CompositeAudioClip([titleTTS, wooshSound, dingSound])
 
     finalAudioArray.append(introAudio)
-    finalAudioArray.append(AudioFileClip("resources/silence.mp3"))
+    finalAudioArray.append(silenceClip)
     for x in range(counter - 1):
-        audioBodytextClip = AudioFileClip(f"tts/brainrotCommentTTS{x + 1}.mp3")
+        audioBodytextClip = AudioFileClip(f"tts/brainrotCommentTTS{x + 1}.mp3") #TO SPEED
         finalAudioArray.append(audioBodytextClip)
+        # finalAudioArray.append(silenceClip.fx(vfx.speedx, 2))
     print(finalAudioArray)
     finalAudio = concatenate_audioclips(finalAudioArray)
-
-    imager.addTextToTemplate(username, textTitle)
 
     # Scale image function: start at 3x and decrease to 1x over 0.2 seconds
     def scale_image(t):
@@ -118,15 +123,13 @@ def composeVideo():
     randomStartpoint = random.randint(60, int(bgVideo.duration) - int(finalAudio.duration) + 10)
     clip = bgVideo.subclip(randomStartpoint, randomStartpoint + finalAudio.duration)
 
-    # Remove in production
+    # shorten render time for testing
     # clip = bgVideo.subclip(randomStartpoint, randomStartpoint + 10)
 
-    videoWithAudio = clip.set_audio(finalAudio)
+    backgroundMusic = backgroundMusic.set_duration(finalAudio.duration)
+    videoWithAudio = clip.set_audio(CompositeAudioClip([backgroundMusic, finalAudio]))
     finalVideo = CompositeVideoClip([videoWithAudio, originalImage, animatedImage])
     finalVideo.write_videofile("finalVideo.mp4")
-
-
-
 
 
 getPost()

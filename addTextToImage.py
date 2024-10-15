@@ -25,17 +25,8 @@ def addTextToTemplate(userString, titleString, outputPath="introImage.png",templ
     # Verified Favicon #
     verifiedImage = Image.open("resources/verified.png")
     verifiedImage = verifiedImage.resize((30,30))
-    print(verifiedImage)
     verified_x = 195
     verified_y = 828
-    image.paste(verifiedImage, (verified_x, verified_y), verifiedImage)
-
-    # Verified Favicon #
-    verifiedImage = Image.open("resources/verified.png")
-    verifiedImage = verifiedImage.resize((30,30))
-    print(verifiedImage)
-    verified_x = 205
-    verified_y = 823
     image.paste(verifiedImage, (verified_x, verified_y), verifiedImage)
 
     wrapped_text = textwrap.fill(text, width=50)

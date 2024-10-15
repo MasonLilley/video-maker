@@ -1,6 +1,14 @@
 my_secrets/
 tts/
+
+# video files that are really big
 resources/MCParkour1.mp4
+resources/MCParkour2HD.mp4
+resources/MCParkour2HD(1).mp4
+resources/MCParkour3HDVertical.mp4
 resources/SubwaySurfers1.mp4
+resources/SubwaySurfers1BeforeCrop.mp4
 resources/SubwaySurfers2-possiblynodeaths
+resources/sounds/sneakySnitch.mp3
 finalVideo.mp4
+addGoodCaptions.py

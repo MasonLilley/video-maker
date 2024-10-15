@@ -5,6 +5,7 @@ import boto3
 from my_secrets.AWScreds import aws_access_key, aws_secret_access_key
 import re
 import addTextToImage as imager
+from pydub import AudioSegment
 
 narrationGender = "male"
 AWSLimit = 3000
@@ -97,29 +98,42 @@ def getTTS():
 
 def composeVideo():
     global counter
-    finalAudioArray = []
-    finalAudioArray.append(AudioFileClip("tts/titleTTS.mp3"))
-    finalAudioArray.append(AudioFileClip("resources/silence.mp3"))
+    # Using pydub for the audio b/c moviepy had some weird audio artifacts
+    finalAudioArray = ["tts/titleTTS.mp3", "resources/silence.mp3"]
+    # Moviepy to find length of audio clip because we need the title's length for the intro image
+    titleTTSLength = AudioFileClip("tts/titleTTS.mp3").duration
 
     for x in range(counter-1):
-        audioBodytextClip = AudioFileClip(f"tts/bodytextTTS{x+1}.mp3")
+        print(f"Appending bodytextTTS{x+1}.mp3!")
+        audioBodytextClip = f"tts/bodytextTTS{x+1}.mp3"
         finalAudioArray.append(audioBodytextClip)
-    print(finalAudioArray)
-    finalAudio = concatenate_audioclips(finalAudioArray)
+
+    combinedAudio = AudioSegment.from_file(finalAudioArray[0])
+    for file in finalAudioArray[1:]:
+        next_segment = AudioSegment.from_file(file)
+        combinedAudio += next_segment
+    combinedAudio.export("tts/FinalTTS.mp3", format="mp3")
 
     # Make the intro image #
     imager.addTextToTemplate(username, textTitle)
     imagePath = "introImage.png"
     image = ImageClip(imagePath)
-    image = image.set_duration(AudioFileClip("tts/titleTTS.mp3").duration+1).set_position("center")
+    image = image.set_duration(titleTTSLength+1).set_position("center")
 
-    fullVideo = VideoFileClip("resources/MCParkour1.mp4")
+    finalAudio = AudioFileClip("tts/FinalTTS.mp3")
+    fullVideo = VideoFileClip("resources/MCParkour3HDVertical.mp4")
     randomStartpoint = random.randint(0,int(fullVideo.duration)-int(finalAudio.duration)+10)
     clip = fullVideo.subclip(randomStartpoint, randomStartpoint+finalAudio.duration)
 
+    #fast render:
+    # clip = fullVideo.subclip(randomStartpoint, randomStartpoint+10)
+
     videoWithAudio = clip.set_audio(finalAudio)
     finalVideo = CompositeVideoClip([videoWithAudio, image])
+
+
     finalVideo.write_videofile("finalVideo.mp4")
+
 
 
 getPost()
